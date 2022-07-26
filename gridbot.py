@@ -51,9 +51,8 @@ class Gridbot:
             sell_order_ctr += 1
             order_price += self.grid_size
         
-        orderbook = self.exchange.fetch_order_book('ETH/USDT', limit=100)
         initial_buy_order = self.exchange.create_order(self.SYMBOL, "market", "buy", sell_order_ctr*self.POSITION_SIZE)
-        print(f"Buy {sell_order_ctr*self.POSITION_SIZE} {self.SYMBOL} at {order_price} usdt")
+        print(f"Buy {sell_order_ctr*self.POSITION_SIZE} {self.SYMBOL} at {currency_price} usdt")
     
     def place_order(self):
         currency_price = float(self.ticker["info"]['price'])
@@ -102,6 +101,3 @@ class Gridbot:
 
             if len(self.sell_orders) == 0:
                 sys.exit("stopping bot, nothing left to sell")
-
-
-
