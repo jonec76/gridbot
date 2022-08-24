@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - './backend:/backend'
+    ports:
+      - 5000:5000
+    depends_on:
+      - "db"
+  db:
+    container_name: db
+    build:
+      context: ./alpine-mysql
+      dockerfile: Dockerfile
+    ports:
+      - 3306:3306
+    volumes:
+      - ./alpine-mysql:/data
+    
