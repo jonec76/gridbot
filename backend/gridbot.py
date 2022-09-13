@@ -1,6 +1,6 @@
 # %%
 from math import ceil
-import ccxt, config, time, sys
+import ccxt, time, sys
 from threading import Thread
 import time
 import sys, os
@@ -64,14 +64,14 @@ class Gridbot:
                 order = self.exchange.create_order(self.symbol, "limit", "sell", self.position_size, order_price)
                 self.sell_orders.append(order["info"])
                 order_price += self.grid_size
-                sleep(1)
+                sleep(0.5)
 
             order_price = currency_price - self.grid_size
             while order_price > self.floor_price:
                 order = self.exchange.create_order(self.symbol, "limit", "buy", self.position_size, order_price)
                 self.buy_orders.append(order["info"])
                 order_price -= self.grid_size
-                sleep(1)
+                sleep(0.5)
 
         except Exception as e:
             self.cancel_all_order()
@@ -83,4 +83,20 @@ class Gridbot:
         for order in self.buy_orders + self.sell_orders:
             self.exchange.cancel_order(order["id"])
 
-    
+
+
+def cancel_order(discord_id, orders):
+    res = db.load_table('user', col=["api_key", "secret_key"], condition=f"`discord_id`={discord_id}")
+    res = res.fetchone()
+    if res is not None:
+        exchange = ccxt.ftx({
+            'headers':{
+                'FTX-SUBACCOUNT': os.environ["SUB_ACCOUNT"]
+            },
+            'apiKey': res[0],
+            'secret': res[1]
+        })
+        for order_id in orders:
+            exchange.cancel_order(order_id)
+    else:
+        return 

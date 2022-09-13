@@ -1,5 +1,5 @@
 from flask import Flask, request
-from gridbot import Gridbot
+from gridbot import Gridbot, cancel_order
 from threading import Thread
 import db
 
@@ -29,6 +29,18 @@ def isValidUser():
 def register():
     # rsa encryption/decryption
     db.insert_account(request.form["api_key"], request.form["secret_key"], request.form["discord_id"])
+    return "ok"
+
+
+@app.route("/close", methods=["POST"])
+def close():
+    # rsa encryption/decryption
+    discord_id = request.form["discord_id"]
+    symbol = request.form["symbol"]
+    res = db.load_table('bot', col=["order"], condition=f"fk_discord_id='{discord_id}' AND symbol='{symbol}'")
+    orders = [r[0] for r in res]
+    db.delete_orders(orders)
+    cancel_order(discord_id, orders)
     return "ok"
 
 if __name__ == "__main__":

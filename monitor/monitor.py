@@ -39,7 +39,6 @@ def monitor_orders():
             print("None")
             continue
         for r in res:
-            print(r)
             discord_id = r[0]
             symbol = r[1]
             order = r[2]
