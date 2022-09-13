@@ -5,6 +5,9 @@ from threading import Thread
 import time
 import sys, os
 import db
+from time import sleep
+
+
 class Gridbot:
     def __init__(self, position_size=0, num_grid_lines=0, floor_price=0, ceil_price=0, symbol="", discord_id=-1, init_buy_flag=False) -> None:
         self.buy_orders = []
@@ -61,12 +64,15 @@ class Gridbot:
                 order = self.exchange.create_order(self.symbol, "limit", "sell", self.position_size, order_price)
                 self.sell_orders.append(order["info"])
                 order_price += self.grid_size
+                sleep(1)
 
             order_price = currency_price - self.grid_size
             while order_price > self.floor_price:
                 order = self.exchange.create_order(self.symbol, "limit", "buy", self.position_size, order_price)
                 self.buy_orders.append(order["info"])
                 order_price -= self.grid_size
+                sleep(1)
+
         except Exception as e:
             self.cancel_all_order()
             raise e
