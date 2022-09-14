@@ -20,7 +20,7 @@ class Gridbot:
         self.ceil_price = ceil_price
         self.floor_price = floor_price
         self.num_grid_lines = num_grid_lines
-        self.grid_size = int((self.ceil_price - self.floor_price) // self.num_grid_lines)
+        self.grid_size = (self.ceil_price - self.floor_price) / self.num_grid_lines
         self.init_buy_flag = init_buy_flag
         self.set_exchange()
         
@@ -97,6 +97,9 @@ def cancel_order(discord_id, orders):
             'secret': res[1]
         })
         for order_id in orders:
-            exchange.cancel_order(order_id)
+            try:
+                exchange.cancel_order(order_id)
+            except:
+                print("failed to cancel order: "+str(order_id))
     else:
         return 
