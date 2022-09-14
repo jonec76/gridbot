@@ -8,14 +8,20 @@ app = Flask(__name__)
 @app.route("/create", methods=["POST"])
 def create():
     # bot = Gridbot(num_grid_lines=8, ceil_price=1460, floor_price=1380, symbol="ETH/USDT", position_size=0.001)
-    try:
-        bot = Gridbot(discord_id=request.form["discord_id"], num_grid_lines = int(request.form["num_grid_lines"]),\
-        ceil_price=float(request.form["ceil_price"]), floor_price=float(request.form["floor_price"]), \
-        symbol=request.form["symbol"], position_size=float(request.form["position_size"]), init_buy_flag=int(request.form["init_buy_flag"]))
-        bot.place_order()
-    except Exception as e:
-        return str(e)
-    return "ok"
+    discord_id = request.form["discord_id"]
+    symbol = request.form["symbol"]
+    res = db.load_table("bot", col=["id"], condition=f"fk_discord_id='{discord_id}' AND symbol='{symbol}'")
+    if res.fetchone() is None:
+        try:
+            bot = Gridbot(discord_id=request.form["discord_id"], num_grid_lines = int(request.form["num_grid_lines"]),\
+            ceil_price=float(request.form["ceil_price"]), floor_price=float(request.form["floor_price"]), \
+            symbol=request.form["symbol"], position_size=float(request.form["position_size"]), init_buy_flag=int(request.form["init_buy_flag"]))
+            bot.place_order()
+        except Exception as e:
+            return str(e)
+        return "ok"
+    else:
+        return "existing bot"
 
 @app.route("/isValidUser", methods=["GET"])
 def isValidUser():
@@ -39,6 +45,8 @@ def close():
     symbol = request.form["symbol"]
     res = db.load_table('bot', col=["order"], condition=f"fk_discord_id='{discord_id}' AND symbol='{symbol}'")
     orders = [r[0] for r in res]
+    if len(orders) == 0:
+        return "empty"
     db.delete_orders(orders)
     cancel_order(discord_id, orders)
     return "ok"
