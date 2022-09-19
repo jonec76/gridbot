@@ -99,7 +99,7 @@ def cancel_order(discord_id, orders):
         for order_id in orders:
             try:
                 exchange.cancel_order(order_id)
-            except:
-                print("failed to cancel order: "+str(order_id))
+            except Exception as e:
+                raise e
     else:
         return 

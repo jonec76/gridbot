@@ -11,6 +11,8 @@ def create():
     discord_id = request.form["discord_id"]
     symbol = request.form["symbol"]
     res = db.load_table("bot", col=["id"], condition=f"fk_discord_id='{discord_id}' AND symbol='{symbol}'")
+    return {"result": True}
+    
     if res.fetchone() is None:
         try:
             bot = Gridbot(discord_id=request.form["discord_id"], num_grid_lines = int(request.form["num_grid_lines"]),\
@@ -18,38 +20,42 @@ def create():
             symbol=request.form["symbol"], position_size=float(request.form["position_size"]), init_buy_flag=int(request.form["init_buy_flag"]))
             bot.place_order()
         except Exception as e:
-            return str(e)
-        return "ok"
+            return {"result": False, "Error message": str(e)} 
+        return {"result": True}
     else:
-        return "existing bot"
+        return {"result": False, "Error message": "Existing bot"} 
 
-@app.route("/isValidUser", methods=["GET"])
-def isValidUser():
+@app.route("/isVerifiedUser", methods=["GET"])
+def isVerifiedUser():
     discord_id = request.args.get('discord_id')
     res = db.load_table("user", condition=f"discord_id={discord_id}")
     if res.fetchone() is None:
-        return "false"
-    return "true"
+        return {"result": False, "Error message": "Not a verified user"} 
+    return {"result": True}
 
 @app.route("/register", methods=["POST"])
 def register():
     # rsa encryption/decryption
-    db.insert_account(request.form["api_key"], request.form["secret_key"], request.form["discord_id"])
-    return "ok"
-
+    try:
+        db.insert_account(request.form["api_key"], request.form["secret_key"], request.form["discord_id"])
+    except Exception as e:
+        return {"result": False, "Error message": str(e)} 
+    return {"result": True} 
 
 @app.route("/close", methods=["POST"])
 def close():
-    # rsa encryption/decryption
     discord_id = request.form["discord_id"]
     symbol = request.form["symbol"]
     res = db.load_table('bot', col=["order"], condition=f"fk_discord_id='{discord_id}' AND symbol='{symbol}'")
     orders = [r[0] for r in res]
     if len(orders) == 0:
-        return "empty"
-    db.delete_orders(orders)
-    cancel_order(discord_id, orders)
-    return "ok"
+        return {"result": False, "Error message": "Can't find the bot"} 
+    try:
+        db.delete_orders(orders)
+        cancel_order(discord_id, orders)
+    except Exception as e:
+        return {"result": False, "Error message": str(e)} 
+    return {"result": True} 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", threaded=True, debug=True)
