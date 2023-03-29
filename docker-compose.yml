@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - './backend:/backend'
+      - './db/db.py:/backend/db.py'
+    ports:
+      - 5000:5000
+    depends_on:
+      - "db"
+    environment:
+      - SUB_ACCOUNT=grid
+  monitor:
+    restart: always
+    container_name: monitor
+    build:
+      context: ./monitor
+      dockerfile: Dockerfile
+    volumes:
+      - './monitor:/monitor'
+      - './db/db.py:/monitor/db.py'
+    depends_on:
+      - "backend"
+    environment:
+      - SUB_ACCOUNT=grid
+  db:
+    container_name: db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    ports:
+      - 3306:3306
+    volumes:
+      - ./db:/data
+
+    

@@ -1,0 +1,10 @@
+config.py
+__pycache__/
+alpine-mysql
+db-note
+my.cnf
+startup.sh
+/ws
+config*
+.DS_Store
+requirements*
